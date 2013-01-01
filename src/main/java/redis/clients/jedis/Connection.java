@@ -18,11 +18,11 @@ import redis.clients.util.SafeEncoder;
 public class Connection {
     private String host;
     private int port = Protocol.DEFAULT_PORT;
-    private Socket socket;
-    private RedisOutputStream outputStream;
-    private RedisInputStream inputStream;
+    protected Socket socket;
+    protected RedisOutputStream outputStream;
+    protected RedisInputStream inputStream;
     private int pipelinedCommands = 0;
-    private int timeout = Protocol.DEFAULT_TIMEOUT;
+    protected int timeout = Protocol.DEFAULT_TIMEOUT;
 
     public Socket getSocket() {
         return socket;
