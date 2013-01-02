@@ -40,5 +40,11 @@ public class ConnectionTest extends Assert {
         client.setPort(6379);
 	client.setTimeoutInfinite();
     }
+    @Test
+    public void connectfile() {
+        client.setHost("redis://:foobared/tmp/test" );
+        client.setPort(0);
+        client.connect();
+    }
 
 }
