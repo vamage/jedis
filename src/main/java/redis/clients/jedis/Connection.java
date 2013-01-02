@@ -6,6 +6,10 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
+//For native IO
+import org.newsclub.net.unix.AFUNIXSocket;
+import org.newsclub.net.unix.AFUNIXSocketAddress;
+import java.io.File;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -18,11 +22,11 @@ import redis.clients.util.SafeEncoder;
 public class Connection {
     private String host;
     private int port = Protocol.DEFAULT_PORT;
-    protected Socket socket;
-    protected RedisOutputStream outputStream;
-    protected RedisInputStream inputStream;
+    private Socket socket;
+    private RedisOutputStream outputStream;
+    private RedisInputStream inputStream;
     private int pipelinedCommands = 0;
-    protected int timeout = Protocol.DEFAULT_TIMEOUT;
+    private int timeout = Protocol.DEFAULT_TIMEOUT;
 
     public Socket getSocket() {
         return socket;
@@ -121,22 +125,56 @@ public class Connection {
     public void connect() {
         if (!isConnected()) {
             try {
-                socket = new Socket();
-                //->@wjw_add
-                socket.setReuseAddress(true);
-                socket.setKeepAlive(true);  //Will monitor the TCP connection is valid
-                socket.setTcpNoDelay(true);  //Socket buffer Whetherclosed, to ensure timely delivery of data
-                socket.setSoLinger(true,0);  //Control calls close () method, the underlying socket is closed immediately
-                //<-@wjw_add
+                if(port >0 )
+                {
+                connectIP();
+                }
+                else
+                {
+                    connectFile();
+                }
 
-                socket.connect(new InetSocketAddress(host, port), timeout);
-                socket.setSoTimeout(timeout);
-                outputStream = new RedisOutputStream(socket.getOutputStream());
-                inputStream = new RedisInputStream(socket.getInputStream());
             } catch (IOException ex) {
                 throw new JedisConnectionException(ex);
             }
+
         }
+    }
+    private void connectIP()   throws IOException
+    {
+
+        socket = new Socket();
+        //->@wjw_add
+        socket.setReuseAddress(true);
+        socket.setKeepAlive(true);  //Will monitor the TCP connection is valid
+        socket.setTcpNoDelay(true);  //Socket buffer Whetherclosed, to ensure timely delivery of data
+        socket.setSoLinger(true,0);  //Control calls close () method, the underlying socket is closed immediately
+        //<-@wjw_add
+
+        socket.connect(new InetSocketAddress(host, port), timeout);
+        socket.setSoTimeout(timeout);
+        outputStream = new RedisOutputStream(socket.getOutputStream());
+        inputStream = new RedisInputStream(socket.getInputStream());
+
+
+    }
+    private  void connectFile()   throws IOException
+    {
+        File socketFile = new File(host);
+        socket = AFUNIXSocket.newInstance();
+
+
+        //->@wjw_add
+        socket.setReuseAddress(true);
+        socket.setKeepAlive(true);  //Will monitor the TCP connection is valid
+        socket.setTcpNoDelay(true);  //Socket buffer Whetherclosed, to ensure timely delivery of data
+        socket.setSoLinger(true,0);  //Control calls close () method, the underlying socket is closed immediately
+        //<-@wjw_add
+
+        socket.connect(new AFUNIXSocketAddress(socketFile));
+        socket.setSoTimeout(timeout);
+        outputStream = new RedisOutputStream(socket.getOutputStream());
+        inputStream = new RedisInputStream(socket.getInputStream());
     }
 
     public void disconnect() {

@@ -23,11 +23,7 @@ public class BinaryJedis implements BinaryJedisCommands {
     public BinaryJedis(final String host) {
 	URI uri = URI.create(host);
 	if (uri.getScheme() != null && uri.getScheme().equals("redis")) {
-	    client = new Client(uri.getHost(), uri.getPort());
-	    client.auth(uri.getUserInfo().split(":", 2)[1]);
-	    client.getStatusCodeReply();
-	    client.select(Integer.parseInt(uri.getPath().split("/", 2)[1]));
-	    client.getStatusCodeReply();
+          this.newClient(uri);
 	} else {
 	    client = new Client(host);
 	}
@@ -49,13 +45,32 @@ public class BinaryJedis implements BinaryJedisCommands {
     }
 
     public BinaryJedis(URI uri) {
-	client = new Client(uri.getHost(), uri.getPort());
-	client.auth(uri.getUserInfo().split(":", 2)[1]);
-	client.getStatusCodeReply();
-	client.select(Integer.parseInt(uri.getPath().split("/", 2)[1]));
-	client.getStatusCodeReply();
-    }
+        if (uri.getScheme() != null && uri.getScheme().equals("redis")) {
+	this.newClient(uri);
+        }
 
+    }
+    protected void newClient(URI uri)
+    {
+        if(uri.getHost() != null)
+        {
+        client = new Client(uri.getHost(), uri.getPort());
+
+        client.auth(uri.getUserInfo().split(":", 2)[1]);
+        client.getStatusCodeReply();
+        client.select(Integer.parseInt(uri.getPath().split("/", 2)[1]));
+        client.getStatusCodeReply();
+        }
+        else if (uri.getPath() !=null)
+        {
+            client = new Client(uri.getPath(),0);
+
+            client.auth(uri.getUserInfo().split(":", 2)[1]);
+            client.getStatusCodeReply();
+
+            client.getStatusCodeReply();
+        }
+    }
     public String ping() {
 	checkIsInMulti();
 	client.ping();
