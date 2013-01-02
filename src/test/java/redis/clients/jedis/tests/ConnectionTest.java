@@ -1,9 +1,11 @@
 package redis.clients.jedis.tests;
 
+import com.sun.corba.se.impl.logging.ORBUtilSystemException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import java.net.URI;
 
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -41,8 +43,10 @@ public class ConnectionTest extends Assert {
 	client.setTimeoutInfinite();
     }
     @Test
-    public void connectfile() {
-        client.setHost("redis://:foobared/tmp/test" );
+    public void connectFile() {
+
+        client.setHost("/tmp/test" );
+        System.out.println(client.getHost()) ;
         client.setPort(0);
         client.connect();
     }

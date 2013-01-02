@@ -82,6 +82,12 @@ public class JedisTest extends JedisCommandTestBase {
 	assertEquals("PONG", jedis.ping());
 	assertEquals("bar", jedis.get("foo"));
     }
+    @Test
+    public void startFileWithUrl()        throws URISyntaxException
+    {
+        Jedis jedis = new Jedis(new URI("redis://:foobared@/tmp/test"));
+        assertEquals("PONG", jedis.ping());
+    }
 
     @Test
     public void startWithUrl() throws URISyntaxException {
